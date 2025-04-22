@@ -13,6 +13,8 @@ import logging
 import argparse
 from typing import Dict, List, Tuple, Optional, Union
 import traceback
+# Import fragfit for formula matching
+import fragfit
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -167,6 +169,43 @@ def convert_smiles_to_inchi(smiles: str) -> Tuple[str, str]:
         logger.warning(f"Error converting SMILES to InChI: {str(e)}")
         return "", ""
 
+def match_formula(mz_array: np.ndarray, parent_formula: str, 
+                 tolerance_da: float, charge: int = 1) -> List[Tuple[str, float, float]]:
+    """
+    Match peaks to possible fragment formulas.
+    
+    Args:
+        mz_array: Array of m/z values
+        parent_formula: Molecular formula of the parent molecule
+        tolerance_da: Mass tolerance in Da
+        charge: Charge state of the fragments (default: 1)
+    
+    Returns:
+        List of tuples (formula, exact_mass, mass_error)
+    """
+    if not parent_formula or pd.isna(parent_formula):
+        logger.warning("No parent formula provided for formula matching")
+        return [(None, None, None)] * len(mz_array)
+    
+    try:
+        results = []
+        
+        for mz in mz_array:
+            # Use fragfit.find_best_form to find best matching formula
+            formula, exact_mass, error = fragfit.find_best_form(
+                mass=mz,
+                parent_form=parent_formula,
+                tolerance_da=tolerance_da,
+                charge=charge
+            )
+            
+            results.append((formula, exact_mass, error))
+        
+        return results
+    except Exception as e:
+        logger.error(f"Error in formula matching: {str(e)}")
+        return [(None, None, None)] * len(mz_array)
+
 def format_msp(mz_array: np.ndarray, intensity_array: np.ndarray, 
                metadata: Dict, row_data: pd.Series, 
                raw_intensity_cutoff: float = 0) -> str:
@@ -188,6 +227,30 @@ def format_msp(mz_array: np.ndarray, intensity_array: np.ndarray,
         mask = intensity_array >= raw_intensity_cutoff
         mz_array = mz_array[mask]
         intensity_array = intensity_array[mask]
+    
+    # Check if formula matching should be applied
+    do_formula_matching = (pd.notna(row_data.get('Molecular_formula')) and 
+                          pd.notna(row_data.get('Formula_Matching_Tolerance')))
+    
+    # Perform formula matching if needed
+    formula_matches = None
+    if do_formula_matching:
+        try:
+            # Get charge from metadata if available
+            charge = metadata.get('precursor_charge', 1)
+            if charge is None:
+                charge = 1
+            
+            logger.info(f"Performing formula matching with parent formula: {row_data['Molecular_formula']}")
+            formula_matches = match_formula(
+                mz_array, 
+                row_data['Molecular_formula'],
+                float(row_data['Formula_Matching_Tolerance']),
+                charge
+            )
+        except Exception as e:
+            logger.warning(f"Error in formula matching: {str(e)}")
+            do_formula_matching = False
     
     # Calculate number of peaks and total intensity
     num_peaks = len(mz_array)
@@ -230,8 +293,13 @@ def format_msp(mz_array: np.ndarray, intensity_array: np.ndarray,
     
     # Add peak data
     peak_lines = []
-    for mz, intensity in zip(mz_array, intensity_array):
-        peak_lines.append(f"{mz:.6f} {intensity:.0f}")
+    for i, (mz, intensity) in enumerate(zip(mz_array, intensity_array)):
+        if do_formula_matching and formula_matches[i][0] is not None:
+            formula, exact_mass, _ = formula_matches[i]
+            # Include formula and exact mass in the output
+            peak_lines.append(f"{mz:.6f} {intensity:.0f} \"{formula}\" {exact_mass:.6f}")
+        else:
+            peak_lines.append(f"{mz:.6f} {intensity:.0f}")
     
     msp_lines.append("\n".join(peak_lines))
     

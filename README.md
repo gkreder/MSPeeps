@@ -36,6 +36,7 @@ pixi add pandas
 pixi add --pypi pymzml
 pixi add --pypi rdkit
 pixi add --pypi openpyxl
+pixi add --pypi fragfit
 ```
 
 ## Dependencies
@@ -45,6 +46,7 @@ pixi add --pypi openpyxl
 - **RDKit**: For SMILES to InChI/InChIKey conversion
 - **openpyxl**: For Excel file support
 - **numpy**: For numerical operations
+- **fragfit**: For molecular formula matching and mass calculations
 
 ## Usage
 
@@ -113,21 +115,21 @@ NUM PEAKS: [Number of peaks]
 ...
 ```
 
-### Future Enhancement: Formula Matching
+## Formula Matching
 
-In future versions, the tool will support matching fragments in the spectrum to the closest possible molecular formula, within a specified tolerance, given the parent formula. This will enable:
+The tool now supports matching fragments in the spectrum to the closest possible molecular formula, within a specified tolerance, given the parent formula. This enables:
 
-- **Fragment Formula Assignment**: Each m/z peak will be annotated with its most likely molecular formula
-- **Exact Mass Calculation**: The exact mass of each assigned formula will be calculated
-- **Format Enhancement**: Peak lines will include formula and exact mass: `[m/z] [intensity] "[formula]" [exact_mass]`
+- **Fragment Formula Assignment**: Each m/z peak is annotated with its most likely molecular formula
+- **Exact Mass Calculation**: The exact mass of each assigned formula is calculated
+- **Enhanced Output Format**: Peak lines include formula and exact mass: `[m/z] [intensity] "[formula]" [exact_mass]`
 
-The formula matching will utilize the following approach:
+The formula matching utilizes the following approach:
 1. Apply intensity cutoff to filter peaks
 2. For each peak, find the most likely chemical formula that is a subformula of the parent molecule
 3. Calculate the exact mass of the assigned formula
 4. Account for electron mass and provide correct charges for fragment formulas
 
-This functionality requires both `Molecular_Formula` and `Formula_matching_tolerance` fields to be provided in the input file.
+This functionality requires both `Molecular_Formula` and `Formula_matching_tolerance` fields to be provided in the input file. Formula matching is performed using the [fragfit](https://github.com/gkreder/fragfit) package.
 
 #### Example Output Format with Formula Matching
 
@@ -151,11 +153,11 @@ RETENTIONTIME: 5.04
 PRECURSORMZ: 86.096430
 MSLEVEL: 2
 NUM PEAKS: 5
-30.033819 2461 "CH4N" 30.034089
-55.054611 1497 "C4H7" 55.054770
-57.070259 356 "C4H9" 57.070340
-68.049652 568 "C5H6" 68.049650
-84.080811 2834 "C5H10N" 84.080730
+30.033819 2461 "CH4N" 30.033826
+55.054611 1497 "C4H7" 55.054227
+57.070259 356 "C4H9" 57.069877
+68.049652 568 "C5H6" 68.049476
+84.080811 2834 "C5H10N" 84.080776
 ```
 
 Notice how each peak line now includes the assigned formula and its exact mass.
@@ -164,15 +166,13 @@ Notice how each peak line now includes the assigned formula and its exact mass.
 
 The current version of the tool has the following limitations:
 
-1. **No Formula Matching**: Formula matching for fragments is not yet implemented. This feature is planned for future releases.
+1. **Limited Error Recovery**: While the tool logs errors and continues processing other rows, it may not recover gracefully from all potential error conditions.
 
-2. **Limited Error Recovery**: While the tool logs errors and continues processing other rows, it may not recover gracefully from all potential error conditions.
+2. **Basic Metadata Extraction**: Only a subset of available metadata is extracted from mzML files.
 
-3. **Basic Metadata Extraction**: Only a subset of available metadata is extracted from mzML files.
+3. **Single File Processing**: Each input row creates a separate MSP file; there's no option to combine multiple spectra into a single MSP file.
 
-4. **Single File Processing**: Each input row creates a separate MSP file; there's no option to combine multiple spectra into a single MSP file.
-
-5. **Limited Mass Accuracy Options**: No support for ppm-based tolerances, only absolute mass tolerances (Da).
+4. **Limited Mass Accuracy Options**: No support for ppm-based tolerances, only absolute mass tolerances (Da).
 
 ## Example
 
@@ -195,30 +195,15 @@ The above command will create `Piperidine.msp` in the output directory.
 
 ## Future Features
 
-### Formula Matching Implementation
-
-The formula matching functionality will be implemented using optimization techniques to find the best possible formula match for each peak. The key components include:
-
-1. **Formula Decomposition**: Breaking down the parent formula into potential fragment subformulas
-2. **Mass Error Minimization**: Finding the formula with the smallest mass error within the specified tolerance
-3. **Chemical Plausibility Checks**: Ensuring the assigned formulas make chemical sense
-4. **Handling Special Cases**:
-   - Accounting for electron mass in charged fragments
-   - Supporting isotope patterns
-   - Handling adduct ions
-
-Additional dependencies for formula matching will include:
-- **molmass**: For handling chemical formulas and isotope calculations
-- **cvxpy**: For optimization in formula matching
-- **more_itertools**: For efficient generation of subformulas
-
-### Other Planned Enhancements
+### Planned Enhancements
 
 - **Batch Processing Improvements**: Better handling of large batch processing jobs
 - **Extended Metadata Support**: Support for more metadata fields from mzML files
 - **Interactive Visualization**: Tools for visualizing extracted spectra
 - **Advanced Filtering Options**: More options for filtering and processing spectra
 - **Library Building**: Tools for building and searching MSP spectral libraries
+- **PPM-based Tolerance**: Support for ppm-based mass tolerances in addition to absolute tolerances (Da)
+- **Advanced Formula Matching**: Additional options for formula matching algorithms and isotope pattern support
 
 ## Troubleshooting
 
