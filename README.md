@@ -23,10 +23,10 @@ Install the latest release from PyPI:
 pip install mspeeps
 ```
 
-### From Conda-Forge
+### From conda
 
 ```bash
-conda install -c conda-forge mspeeps
+conda install -c gkreder mspeeps
 ```
 
 ### From Source

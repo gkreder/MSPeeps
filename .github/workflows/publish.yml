@@ -37,9 +37,8 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/mspeeps/
+    # Note: You'll need to create an environment named 'pypi' in your GitHub repository settings
+    # and configure PyPI trusted publishing
     permissions:
       id-token: write  # Required for trusted publishing
     

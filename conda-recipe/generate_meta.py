@@ -6,6 +6,7 @@ Run this script from the project root to update conda-recipe/meta.yaml.
 import tomli
 import os
 import sys
+import re
 
 # Read pyproject.toml
 with open("pyproject.toml", "rb") as f:
@@ -23,33 +24,28 @@ dependencies = project.get("dependencies", [])
 # Format dependencies for conda
 conda_deps = []
 for dep in dependencies:
-    # Convert from PEP 508 format to conda format if needed
-    if ";" in dep:  # Skip environment markers for now
+    # Skip environment markers
+    if ";" in dep:
         continue
     
-    # Handle pip vs conda package names (potential differences)
-    if "rdkit" in dep.lower():
+    # Extract name and version constraints using regex
+    name_match = re.match(r"([a-zA-Z0-9_\-]+)", dep)
+    name_part = name_match.group(1) if name_match else dep
+    
+    # Handle rdkit specifically
+    if name_part.lower() == "rdkit":
         conda_deps.append("rdkit")
         continue
     
-    # Handle version specifiers
-    if ">=" in dep and "<" in dep:
-        name_part = dep.split(">=")[0].strip()
-        min_ver = dep.split(">=")[1].split("<")[0].strip()
-        max_ver = dep.split("<")[1].strip()
-        conda_deps.append(f"{name_part} >={min_ver},<{max_ver}")
-    elif ">=" in dep:
-        parts = dep.split(">=")
-        name_part = parts[0].strip()
-        version = parts[1].strip().split(",")[0].strip()
-        conda_deps.append(f"{name_part} >={version}")
-    elif "==" in dep:
-        parts = dep.split("==")
-        name_part = parts[0].strip()
-        version = parts[1].strip().split(",")[0].strip()
-        conda_deps.append(f"{name_part} =={version}")
+    # Handle version specifiers more robustly
+    version_part = dep[len(name_part):].strip()
+    
+    if version_part:
+        # Replace commas with spaces
+        version_part = version_part.replace(",", " ")
+        conda_deps.append(f"{name_part} {version_part}")
     else:
-        conda_deps.append(dep)
+        conda_deps.append(name_part)
 
 # Create meta.yaml content
 meta_yaml = f"""package:
