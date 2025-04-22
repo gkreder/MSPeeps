@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mspeeps"
+version = "0.1.0"
+description = "A Python package for extracting mass spectrometry spectra from mzML files and converting them to MSP format"
+readme = "README.md"
+authors = [
+    {name = "Gabriel Reder", email = "gk@reder.io"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+keywords = ["mass spectrometry", "mzML", "MSP", "spectrum", "chemistry"]
+dependencies = [
+    "pandas>=2.2.3,<3",
+    "pymzml>=2.5.11,<3",
+    "rdkit>=2024.9.6,<2025",
+    "openpyxl>=3.1.5,<4",
+    "fragfit>=0.1.2,<0.2",
+    "numpy>=1.26.0",
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/gkreder/mspeeps"
+"Bug Tracker" = "https://github.com/gkreder/mspeeps/issues"
+
+[project.scripts]
+mspeeps = "mspeeps.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true 

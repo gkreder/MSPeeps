@@ -1,4 +1,4 @@
-# MSP File Scraper
+# MSPeeps
 
 A Python package for extracting mass spectrometry spectra from mzML files and converting them to MSP format.
 
@@ -11,66 +11,102 @@ This tool allows you to:
 - Convert SMILES to InChI and InChIKey when available
 - Format the extracted data into MSP files according to standard conventions
 - Process multiple spectra in batch mode via a tabular input file (TSV or Excel)
+- Match peaks to molecular formulas using the fragfit package
 
 ## Installation
 
-This package uses [pixi](https://prefix.dev/) for dependency management. Make sure you have pixi installed before proceeding.
+### From PyPI (Recommended)
 
-### Clone the repository:
+Install the latest release from PyPI:
 
 ```bash
-git clone https://github.com/yourusername/MSP-file-scraping.git
-cd MSP-file-scraping
+pip install mspeeps
 ```
 
-### Install dependencies:
+### From Conda-Forge
 
 ```bash
+conda install -c conda-forge mspeeps
+```
+
+### From Source
+
+Clone the repository and install in development mode:
+
+```bash
+git clone https://github.com/gkreder/mspeeps.git
+cd mspeeps
+pip install -e .
+```
+
+For development, install with optional dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+### Using pixi
+
+If you prefer using pixi for dependency management:
+
+```bash
+git clone https://github.com/gkreder/mspeeps.git
+cd mspeeps
 pixi install
 ```
 
-Or install dependencies individually:
-
-```bash
-pixi add pandas
-pixi add --pypi pymzml
-pixi add --pypi rdkit
-pixi add --pypi openpyxl
-pixi add --pypi fragfit
-```
-
-## Dependencies
-
-- **pandas**: For reading and processing tabular data
-- **pymzml**: For parsing mzML files
-- **RDKit**: For SMILES to InChI/InChIKey conversion
-- **openpyxl**: For Excel file support
-- **numpy**: For numerical operations
-- **fragfit**: For molecular formula matching and mass calculations
-
 ## Usage
 
-### Basic Usage
+### Command-line Interface
 
 Process an input file using the default settings:
 
 ```bash
-pixi run --manifest-path /path/to/pixi.toml python msp_scraper.py input_file.tsv
+mspeeps input_file.tsv
 ```
-
-### With Custom Settings
 
 Specify custom output directory and log file:
 
 ```bash
-pixi run --manifest-path /path/to/pixi.toml python msp_scraper.py input_file.tsv --output_dir my_output --log_file custom_log.log
+mspeeps input_file.tsv --output_dir my_output --log_file custom_log.log
 ```
 
-### Command-line Arguments
+Enable verbose logging:
 
-- `input_file`: Path to the input TSV/Excel file (required)
-- `--output_dir`: Directory to store output MSP files (default: 'output')
-- `--log_file`: Path to store log file (default: 'msp_scraper.log')
+```bash
+mspeeps input_file.tsv --verbose
+```
+
+### Python API
+
+```python
+import mspeeps
+import pandas as pd
+
+# Parse input file
+df = mspeeps.parse_input_file("input_file.tsv")
+
+# Process each row
+for _, row in df.iterrows():
+    output_path = mspeeps.process_file(row, output_dir="output")
+    if output_path:
+        print(f"Successfully processed: {output_path}")
+
+# Or extract a spectrum directly
+mz_array, intensity_array, metadata = mspeeps.extract_spectrum(
+    mzml_path="file.mzML",
+    spectrum_index=123,
+    ms_level=2
+)
+
+# Format MSP data
+msp_data = mspeeps.format_msp(
+    mz_array,
+    intensity_array,
+    metadata,
+    row_data={"Molecule_name": "Example"}
+)
+```
 
 ## Input Format
 
@@ -117,21 +153,11 @@ NUM PEAKS: [Number of peaks]
 
 ## Formula Matching
 
-The tool now supports matching fragments in the spectrum to the closest possible molecular formula, within a specified tolerance, given the parent formula. This enables:
+The tool supports matching fragments in the spectrum to the closest possible molecular formula, within a specified tolerance, given the parent formula. This enables:
 
 - **Fragment Formula Assignment**: Each m/z peak is annotated with its most likely molecular formula
 - **Exact Mass Calculation**: The exact mass of each assigned formula is calculated
 - **Enhanced Output Format**: Peak lines include formula and exact mass: `[m/z] [intensity] "[formula]" [exact_mass]`
-
-The formula matching utilizes the following approach:
-1. Apply intensity cutoff to filter peaks
-2. For each peak, find the most likely chemical formula that is a subformula of the parent molecule
-3. Calculate the exact mass of the assigned formula
-4. Account for electron mass and provide correct charges for fragment formulas
-
-This functionality requires both `Molecular_Formula` and `Formula_matching_tolerance` fields to be provided in the input file. Formula matching is performed using the [fragfit](https://github.com/gkreder/fragfit) package.
-
-#### Example Output Format with Formula Matching
 
 When formula matching is enabled, the output MSP file will look like:
 
@@ -160,65 +186,48 @@ NUM PEAKS: 5
 84.080811 2834 "C5H10N" 84.080776
 ```
 
-Notice how each peak line now includes the assigned formula and its exact mass.
+## Development
 
-## Current Implementation Limitations
-
-The current version of the tool has the following limitations:
-
-1. **Limited Error Recovery**: While the tool logs errors and continues processing other rows, it may not recover gracefully from all potential error conditions.
-
-2. **Basic Metadata Extraction**: Only a subset of available metadata is extracted from mzML files.
-
-3. **Single File Processing**: Each input row creates a separate MSP file; there's no option to combine multiple spectra into a single MSP file.
-
-4. **Limited Mass Accuracy Options**: No support for ppm-based tolerances, only absolute mass tolerances (Da).
-
-## Example
-
-### Sample Input File (TSV):
-
-```
-Molecule_name	SMILES	Molecular_formula	Raw_Intensity_Cutoff	Formula_Matching_Tolerance	m/z	RT_seconds	MS_level	mzML_filepath	Spectrum_index
-Piperidine	N1CCCCC1	C5H11N	100	0.002	86.09643	305.9	2	/path/to/file.mzML	576
-```
-
-### Running the Command:
+### Running Tests
 
 ```bash
-pixi run --manifest-path /path/to/pixi.toml python msp_scraper.py input_file.tsv
+pytest
 ```
 
-### Output:
+With coverage:
 
-The above command will create `Piperidine.msp` in the output directory.
+```bash
+pytest --cov=mspeeps
+```
 
-## Future Features
+### Code Style
 
-### Planned Enhancements
+The code follows PEP 8 guidelines with a line length of 88 characters. You can format the code using:
 
-- **Batch Processing Improvements**: Better handling of large batch processing jobs
-- **Extended Metadata Support**: Support for more metadata fields from mzML files
-- **Interactive Visualization**: Tools for visualizing extracted spectra
-- **Advanced Filtering Options**: More options for filtering and processing spectra
-- **Library Building**: Tools for building and searching MSP spectral libraries
-- **PPM-based Tolerance**: Support for ppm-based mass tolerances in addition to absolute tolerances (Da)
-- **Advanced Formula Matching**: Additional options for formula matching algorithms and isotope pattern support
+```bash
+black src tests
+isort src tests
+```
 
-## Troubleshooting
+### Type Checking
 
-### Common Issues
-
-1. **File not found errors**: Ensure all file paths in the input file are correct and accessible.
-2. **Index out of range**: Check that the spectrum index exists in the mzML file.
-3. **RT not found**: Ensure the retention time is within the range present in the mzML file.
-4. **Missing required columns**: Make sure your input file has at least the Molecule_name and mzML_filepath columns.
-
-### Logging
-
-The script generates a log file (default: `msp_scraper.log`) that contains information about the processing steps, warnings, and errors. Check this file for troubleshooting.
+```bash
+mypy src
+```
 
 ## License
 
 MIT
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Citing
+
+If you use MSPeeps in your research, please cite it as:
+
+```
+Kreider-Letterman, G. (2023). MSPeeps: A Python package for extracting mass spectrometry spectra and converting to MSP format. https://github.com/gkreder/mspeeps
+```
 

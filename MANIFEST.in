@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+include pyproject.toml
+include MANIFEST.in
+
+recursive-include tests *.py
+recursive-include src *.py *.md
+
+global-exclude *.py[cod] __pycache__ *.so *.dylib .DS_Store 
