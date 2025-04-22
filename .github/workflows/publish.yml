@@ -72,7 +72,7 @@ jobs:
         with:
           miniconda-version: "latest"
           auto-update-conda: true
-          channels: conda-forge
+          channels: conda-forge,gkreder
           auto-activate-base: true
           activate-environment: ""
 
@@ -81,6 +81,9 @@ jobs:
         run: |
           conda create -n build python=3.10 conda-build anaconda-client setuptools pip -y
           conda activate build
+          # Add gkreder channel to conda config
+          conda config --add channels gkreder
+          conda config --add channels conda-forge
 
       - name: Install dependencies
         shell: bash -l {0}
@@ -95,12 +98,15 @@ jobs:
           python conda-recipe/generate_meta.py
           echo "Generated meta.yaml:"
           cat conda-recipe/meta.yaml
+          echo "Using conda build config:"
+          cat conda-recipe/conda_build_config.yaml
 
       - name: Build Conda package
         shell: bash -l {0}
         run: |
           conda activate build
-          conda build conda-recipe --output-folder conda-dist
+          # Use the config file and specify channels
+          conda build conda-recipe --output-folder conda-dist --channel gkreder --channel conda-forge
 
       - name: List build output
         shell: bash -l {0}

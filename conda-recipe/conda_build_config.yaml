@@ -1,0 +1,8 @@
+channels:
+  - gkreder
+  - conda-forge
+  - defaults
+
+# Set a default numpy version to avoid the warning
+numpy:
+  - 1.26 

@@ -32,6 +32,20 @@ for dep in dependencies:
     name_match = re.match(r"([a-zA-Z0-9_\-]+)", dep)
     name_part = name_match.group(1) if name_match else dep
     
+    # Handle fragfit specifically - add channel info
+    if name_part.lower() == "fragfit":
+        # Extract version info if available
+        version_part = dep[len(name_part):].strip()
+        if ">=" in version_part and "<" in version_part:
+            min_ver_match = re.search(r">=\s*([0-9.]+)", version_part)
+            max_ver_match = re.search(r"<\s*([0-9.]+)", version_part)
+            min_ver = min_ver_match.group(1) if min_ver_match else "0.1.2"
+            max_ver = max_ver_match.group(1) if max_ver_match else "0.2"
+            conda_deps.append(f"{name_part} >={min_ver},<{max_ver}  # [gkreder]")
+        else:
+            conda_deps.append(f"{name_part} >=0.1.2,<0.2  # [gkreder]")
+        continue
+    
     # Handle rdkit specifically
     if name_part.lower() == "rdkit":
         conda_deps.append("rdkit")
@@ -98,7 +112,8 @@ requirements:
 for dep in conda_deps:
     meta_yaml += f"    - {dep}\n"
 
-meta_yaml += f"""
+# Add channels section to indicate where to find dependencies
+meta_yaml += """
 about:
   home: https://github.com/gkreder/mspeeps
   summary: "{description}"
