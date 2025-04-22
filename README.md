@@ -194,7 +194,6 @@ With coverage:
 pytest --cov=mspeeps
 ```
 
-
 ## License
 
 MIT
