@@ -176,7 +176,7 @@ cython_debug/
 
 *.DS_Store
 *.cursorrules
-*.cursorindexing
+*.cursorindexingignore
 *.pixi
 *.specstory
 pixi.lock
