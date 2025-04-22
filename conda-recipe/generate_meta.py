@@ -37,13 +37,37 @@ for dep in dependencies:
         conda_deps.append("rdkit")
         continue
     
-    # Handle version specifiers more robustly
+    # Special case for pandas or any package with complex version range
+    if name_part.lower() == "pandas":
+        # Based on pyproject.toml, specify a fixed format that conda accepts
+        conda_deps.append(f"{name_part} >=2.2.3")
+        continue
+    
+    # Handle version specifiers more robustly for other packages
     version_part = dep[len(name_part):].strip()
     
     if version_part:
-        # Replace commas with spaces
-        version_part = version_part.replace(",", " ")
-        conda_deps.append(f"{name_part} {version_part}")
+        # Format version constraints properly for conda
+        if ">=" in version_part and "<" in version_part:
+            # Extract min and max versions
+            min_ver_match = re.search(r">=\s*([0-9.]+)", version_part)
+            max_ver_match = re.search(r"<\s*([0-9.]+)", version_part)
+            
+            min_ver = min_ver_match.group(1) if min_ver_match else None
+            max_ver = max_ver_match.group(1) if max_ver_match else None
+            
+            if min_ver and max_ver:
+                conda_deps.append(f"{name_part} >={min_ver},<{max_ver}")
+            elif min_ver:
+                conda_deps.append(f"{name_part} >={min_ver}")
+            elif max_ver:
+                conda_deps.append(f"{name_part} <{max_ver}")
+            else:
+                conda_deps.append(name_part)
+        else:
+            # Simple version constraint (like ==, >=, etc.)
+            version_part = re.sub(r',\s*', ',', version_part)  # Remove spaces after commas
+            conda_deps.append(f"{name_part} {version_part}")
     else:
         conda_deps.append(name_part)
 

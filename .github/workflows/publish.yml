@@ -37,8 +37,9 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
-    # Note: You'll need to create an environment named 'pypi' in your GitHub repository settings
-    # and configure PyPI trusted publishing
+    environment:
+      name: pypi  # Must match the environment name set in PyPI
+      url: https://pypi.org/project/mspeeps/
     permissions:
       id-token: write  # Required for trusted publishing
     
@@ -51,7 +52,11 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        # Trusted publishing - no token needed with OpenID Connect
+        # Notes on trusted publishing:
+        # 1. Environment not needed here, the GitHub repository, workflow name, and 
+        #    ref scope are used by PyPI to identify the publisher
+        # 2. The trusted publisher must be configured in PyPI project settings
+        #    with the correct repository, workflow name, and environment settings
 
   publish-conda:
     name: Publish to Anaconda
