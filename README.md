@@ -39,12 +39,6 @@ cd mspeeps
 pip install -e .
 ```
 
-For development, install with optional dependencies:
-
-```bash
-pip install -e ".[dev]"
-```
-
 ### Using pixi
 
 If you prefer using pixi for dependency management:
@@ -200,20 +194,6 @@ With coverage:
 pytest --cov=mspeeps
 ```
 
-### Code Style
-
-The code follows PEP 8 guidelines with a line length of 88 characters. You can format the code using:
-
-```bash
-black src tests
-isort src tests
-```
-
-### Type Checking
-
-```bash
-mypy src
-```
 
 ## License
 
@@ -222,12 +202,4 @@ MIT
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Citing
-
-If you use MSPeeps in your research, please cite it as:
-
-```
-Kreider-Letterman, G. (2023). MSPeeps: A Python package for extracting mass spectrometry spectra and converting to MSP format. https://github.com/gkreder/mspeeps
-```
 
