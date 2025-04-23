@@ -1,0 +1,37 @@
+package:
+  name: mspeeps
+  version: "0.1.1"
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: python -m pip install .
+  entry_points:
+    - mspeeps = mspeeps.cli:main
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - setuptools
+  run:
+    - python >=3.10
+    - pymzml >=2.5.11,<3
+    - rdkit
+    - pandas >=2.2.3
+    - openpyxl >=3.1.5,<4
+    - numpy >=1.26.0
+
+about:
+  home: https://github.com/gkreder/mspeeps
+  summary: "Mass spectrometry data extraction and conversion"
+  license: "MIT"
+  description: |
+    MSPeeps is a Python package for extracting mass spectrometry spectra
+    from mzML files and converting them to MSP format. It provides both
+    a command-line interface and a Python API.
+  dev_url: https://github.com/gkreder/mspeeps
+  doc_url: https://github.com/gkreder/mspeeps
+  doc_source_url: https://github.com/gkreder/mspeeps/blob/main/README.md 

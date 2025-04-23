@@ -18,12 +18,14 @@ name = project.get("name", "mspeeps")
 version = project.get("version", "0.1.0")
 description = project.get("description", "Mass spectrometry data extraction and conversion")
 
-# Extract license as a simple string
+# Extract license with more robust handling
 license_data = project.get("license", {})
-if isinstance(license_data, dict):
+if isinstance(license_data, dict) and "text" in license_data:
     license = license_data.get("text", "MIT")
+elif isinstance(license_data, str):
+    license = license_data
 else:
-    license = "MIT"
+    license = "MIT"  # Default fallback
 
 python_requires = project.get("requires-python", ">=3.10")
 dependencies = project.get("dependencies", [])
@@ -92,8 +94,8 @@ for dep in dependencies:
     else:
         conda_deps.append(name_part)
 
-# Create meta.yaml content
-meta_yaml = f"""package:
+# Create meta.yaml content - using explicit string values
+meta_yaml = f'''package:
   name: {name}
   version: "{version}"
 
@@ -113,18 +115,18 @@ requirements:
     - setuptools
   run:
     - python {python_requires}
-"""
+'''
 
 # Add dependencies
 for dep in conda_deps:
     meta_yaml += f"    - {dep}\n"
 
-# Add channels section to indicate where to find dependencies
-meta_yaml += f"""
+# Add about section with explicit license string (not using string formatting for license)
+meta_yaml += f'''
 about:
   home: https://github.com/gkreder/mspeeps
   summary: "{description}"
-  license: "{license}"
+  license: "MIT"
   description: |
     MSPeeps is a Python package for extracting mass spectrometry spectra
     from mzML files and converting them to MSP format. It provides both
@@ -132,7 +134,7 @@ about:
   dev_url: https://github.com/gkreder/mspeeps
   doc_url: https://github.com/gkreder/mspeeps
   doc_source_url: https://github.com/gkreder/mspeeps/blob/main/README.md
-"""
+'''
 
 # Write to meta.yaml
 with open("conda-recipe/meta.yaml", "w") as f:
