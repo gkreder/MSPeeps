@@ -17,7 +17,14 @@ project = pyproject.get("project", {})
 name = project.get("name", "mspeeps")
 version = project.get("version", "0.1.0")
 description = project.get("description", "Mass spectrometry data extraction and conversion")
-license = project.get("license", {}).get("text", "MIT")
+
+# Extract license as a simple string
+license_data = project.get("license", {})
+if isinstance(license_data, dict):
+    license = license_data.get("text", "MIT")
+else:
+    license = "MIT"
+
 python_requires = project.get("requires-python", ">=3.10")
 dependencies = project.get("dependencies", [])
 
@@ -113,11 +120,11 @@ for dep in conda_deps:
     meta_yaml += f"    - {dep}\n"
 
 # Add channels section to indicate where to find dependencies
-meta_yaml += """
+meta_yaml += f"""
 about:
   home: https://github.com/gkreder/mspeeps
   summary: "{description}"
-  license: {license}
+  license: "{license}"
   description: |
     MSPeeps is a Python package for extracting mass spectrometry spectra
     from mzML files and converting them to MSP format. It provides both
