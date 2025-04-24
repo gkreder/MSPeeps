@@ -4,7 +4,7 @@ Tests for the formula matching functionality.
 
 import unittest
 import numpy as np
-from mspeeps.formula_matching import match_formula
+from src.mspeeps.formula_matching import match_formula
 
 class TestFormulaMatching(unittest.TestCase):
     """Test cases for formula matching functionality."""

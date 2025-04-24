@@ -53,22 +53,88 @@ pixi install
 
 ### Command-line Interface
 
+MSPeeps provides a flexible command-line interface with several subcommands:
+
+```bash
+mspeeps --help
+```
+
+#### Batch Processing (TSV file)
+
 Process an input file using the default settings:
 
 ```bash
-mspeeps input_file.tsv
+mspeeps batch input_file.tsv
 ```
 
 Specify custom output directory and log file:
 
 ```bash
-mspeeps input_file.tsv --output_dir my_output --log_file custom_log.log
+mspeeps batch input_file.tsv --output_dir my_output --log_file custom_log.log
 ```
 
 Enable verbose logging:
 
 ```bash
-mspeeps input_file.tsv --verbose
+mspeeps batch input_file.tsv --verbose
+```
+
+#### Extract Spectra
+
+Extract a spectrum from an mzML file using its index:
+
+```bash
+mspeeps extract --mzml_file file.mzML --spectrum_index 123 --output spectrum.json
+```
+
+Extract a spectrum using retention time:
+
+```bash
+mspeeps extract --mzml_file file.mzML --retention_time 305.9 --ms_level 2 --format csv
+```
+
+#### Convert to MSP Format
+
+Convert a JSON spectrum file to MSP:
+
+```bash
+mspeeps convert --json_file spectrum.json --output spectrum.msp
+```
+
+Convert separate m/z and intensity files:
+
+```bash
+mspeeps convert --mz_file mz_values.txt --intensity_file intensities.txt --output spectrum.msp
+```
+
+#### Match Formulas
+
+Match m/z values to molecular formulas:
+
+```bash
+mspeeps match-formula --mz_values "30.03,55.05,84.08" --parent_formula "C5H11N" --tolerance 0.002
+```
+
+Or use a file with m/z values:
+
+```bash
+mspeeps match-formula --mz_values mz_values.txt --parent_formula "C5H11N" --format json
+```
+
+#### Convert SMILES
+
+Convert a SMILES string to InChI and InChIKey:
+
+```bash
+mspeeps convert-smiles --smiles "N1CCCCC1"
+```
+
+#### Get mzML File Information
+
+Get information about an mzML file:
+
+```bash
+mspeeps info --mzml_file file.mzML
 ```
 
 ### Python API

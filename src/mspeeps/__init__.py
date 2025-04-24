@@ -5,7 +5,7 @@ A Python package for extracting mass spectrometry spectra from mzML files
 and converting them to MSP format.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.3"
 
 # Import public API functions
 from .core import extract_spectrum, format_msp, process_file
