@@ -73,8 +73,9 @@ def test_formula_matching(parent_formula: str, mz_values: np.ndarray, tolerance:
     
     # Print results in MSP format
     print("\nMSP Format Example:")
-    for mz, (formula, exact_mass, _) in zip(mz_values, results):
+    for mz, (formula, exact_mass, error) in zip(mz_values, results):
         if formula and exact_mass:
-            print(f"{mz:.6f} 1000 \"{formula}\" {exact_mass:.6f}")
+            mz_difference = mz - exact_mass
+            print(f"{mz:.6f} 1000 \"{formula}\" {exact_mass:.6f} {mz_difference:.6f}")
         else:
             print(f"{mz:.6f} 1000") 

@@ -249,7 +249,9 @@ def format_msp(mz_array: np.ndarray, intensity_array: np.ndarray,
         for i, (mz, intensity) in enumerate(zip(mz_array, intensity_array)):
             formula, exact_mass, _ = formula_matches[i]
             if formula and exact_mass:
-                msp_lines.append(f"{mz:.6f} {intensity:.0f} \"{formula}\" {exact_mass:.6f}")
+                # Calculate and include the m/z difference (actual - theoretical)
+                mz_difference = mz - exact_mass
+                msp_lines.append(f"{mz:.6f} {intensity:.0f} \"{formula}\" {exact_mass:.6f} {mz_difference:.6f}")
             else:
                 msp_lines.append(f"{mz:.6f} {intensity:.0f}")
     else:

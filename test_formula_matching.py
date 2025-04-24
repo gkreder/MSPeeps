@@ -49,7 +49,8 @@ def test_formula_matching():
     # Print results in MSP format
     print("\nMSP Format Example:")
     for mz, formula, exact_mass, _ in results:
-        print(f"{mz:.6f} 1000 \"{formula}\" {exact_mass:.6f}")
+        mz_difference = mz - exact_mass
+        print(f"{mz:.6f} 1000 \"{formula}\" {exact_mass:.6f} {mz_difference:.6f}")
 
 if __name__ == "__main__":
     test_formula_matching() 

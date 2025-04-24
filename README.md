@@ -151,7 +151,7 @@ The tool supports matching fragments in the spectrum to the closest possible mol
 
 - **Fragment Formula Assignment**: Each m/z peak is annotated with its most likely molecular formula
 - **Exact Mass Calculation**: The exact mass of each assigned formula is calculated
-- **Enhanced Output Format**: Peak lines include formula and exact mass: `[m/z] [intensity] "[formula]" [exact_mass]`
+- **Enhanced Output Format**: Peak lines include formula, exact mass, and m/z difference (actual - theoretical): `[m/z] [intensity] "[formula]" [exact_mass] [m/z_difference]`
 
 When formula matching is enabled, the output MSP file will look like:
 
@@ -173,11 +173,11 @@ RETENTIONTIME: 5.04
 PRECURSORMZ: 86.096430
 MSLEVEL: 2
 NUM PEAKS: 5
-30.033819 2461 "CH4N" 30.033826
-55.054611 1497 "C4H7" 55.054227
-57.070259 356 "C4H9" 57.069877
-68.049652 568 "C5H6" 68.049476
-84.080811 2834 "C5H10N" 84.080776
+30.033819 2461 "CH4N" 30.033826 -0.000007
+55.054611 1497 "C4H7" 55.054227 0.000384
+57.070259 356 "C4H9" 57.069877 0.000382
+68.049652 568 "C5H6" 68.049476 0.000176
+84.080811 2834 "C5H10N" 84.080776 0.000035
 ```
 
 ## Development
